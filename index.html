@@ -21,7 +21,7 @@
         var lastTime;
 
         var camera, scene, renderer, controls,cylinderMaterialGroundContactMaterial,mat1GroundContactMaterial,mat1CylinderContactMaterial,mat1Mat1ContactMaterial;
-        var geometry, material, mesh, groundMaterial, cylinderMaterial,mat1, ground, groundShape;
+        var geometry,physicsMaterial, material, mesh, groundMaterial, cylinderMaterial,mat1, ground, groundShape;
         var container, camera, scene, renderer;
      //   var cannonDebugRenderer;
         // To be synced
@@ -50,6 +50,10 @@
         addCylinder3();
         addCylinder4();
         addCylinder5();
+        addCylinder6();
+        addCylinder7();
+        addCylinder8();
+        addCylinder9();
         
         addPlane();
         
@@ -66,7 +70,7 @@
 
             // camera
             camera = new THREE.PerspectiveCamera( 30, window.innerWidth / window.innerHeight, 0.5, 10000 );
-            camera.position.set(0, 40,3);
+            camera.position.set(0, 90,2);
             camera.up.set(0,1,0);
             camera.lookAt(new THREE.Vector3(0,0,0));
             scene.add(camera);
@@ -101,7 +105,8 @@
             light2.penumbra = 0.03;
             light2.decay = 2;
             light2.distance = 200;
-       
+            light.castShadow = true;
+            light2.castShadow = true;
             scene.add(light2);
             rayCast = new THREE.Raycaster();
             mouse = new THREE.Vector2();
@@ -155,39 +160,38 @@
 
         function initCannon(){
             world = new CANNON.World();
-            world.gravity.set(0,-6,0);
+            world.gravity.set(0,-19,0);
             world.broadphase = new CANNON.NaiveBroadphase();
-            var groundMaterial = new CANNON.Material("groundMaterial");
-            var cylinderMaterial = new CANNON.Material("cylinderMaterial");
-            var mat1 = new CANNON.Material("mat1");
+            world.defaultContactMaterial.restitution = 0.5; 
+            world.defaultContactMaterial.friction = 0.2;
             
-            var cylinderMaterialGroundContactMaterial = new CANNON.ContactMaterial(groundMaterial,cylinderMaterial,{friction:5, restitution: .9});
+            this.damping = -.08; 
+           
             
-            var mat1GroundContactMaterial = new CANNON.ContactMaterial(groundMaterial,mat1,{friction:.5, restitution: .9});
-            var mat1CylinderContactMaterial = new CANNON.ContactMaterial(cylinderMaterial,mat1,{friction:.5, restitution: .9});
-            var mat1Mat1ContactMaterial = new CANNON.ContactMaterial(mat1,mat1,{friction:.5, restitution: .9});
-            world.addContactMaterial(mat1CylinderContactMaterial);
-            world.addContactMaterial(mat1GroundContactMaterial);
-            world.addContactMaterial(cylinderMaterialGroundContactMaterial);
-            world.addContactMaterial(mat1Mat1ContactMaterial);
+            
+            
+            
+ 
+
         }
         
 
         function addPlane(){
             // Physics
             var groundshape = new CANNON.Plane();
-            var ground = new CANNON.Body({ mass: 0, material: groundMaterial });
-          
+            var ground = new CANNON.Body({ mass: 0 });
+            ground.linearDamping = this.damping;
             ground.addShape(groundshape);
             ground.quaternion.setFromAxisAngle(new CANNON.Vec3(1,0,0),-Math.PI/2);
             world.add(ground);
             bodies.push(ground);
-
+            
             // Graphics
             geometry = new THREE.PlaneGeometry( 100, 100, 1, 1 );
             mesh = new THREE.Mesh( geometry, material3 );
             mesh.quaternion.setFromAxisAngle(new THREE.Vector3(1,0,0), -Math.PI / 2);
             
+            mesh.castShadow = true;
             mesh.recieveShadow = true;
             scene.add(mesh);
             meshes.push(mesh);
@@ -199,18 +203,21 @@
 
         function addCylinder(pos){
             // Physics
-            var body = new CANNON.Body({ mass: 5, material:cylinderMaterial });
+            var body = new CANNON.Body({ mass: 5 });
             var shape = new CANNON.Cylinder(1, 1, .3, 10);
             var quat = new CANNON.Quaternion(0.5, 0, 0, 0.5);
             quat.normalize();
             body.addShape(shape, new CANNON.Vec3, quat);
             body.position.set(pos.x, pos.y, pos.z);
+            body.linearDamping = this.damping;
             world.add(body);
             bodies.push(body);
 
             // Graphics
             var geo = new THREE.CylinderGeometry(1,1,.3,20,20,false);
             var mesh = new THREE.Mesh(geo, material2);
+            mesh.recieveShadow = true;
+            mesh.castShadow = true;
             meshes.push(mesh);
             scene.add(mesh);
            
@@ -218,74 +225,169 @@
     
      function addCylinder2(){
             // Physics
-            var body = new CANNON.Body({ mass: mass, material : mat1 });
+            var body = new CANNON.Body({ mass: mass });
             var shape = new CANNON.Cylinder(1, 1, .3, 10);
             var quat = new CANNON.Quaternion(0.5, 0, 0, 0.5);
             quat.normalize();
             body.addShape(shape, new CANNON.Vec3, quat);
             body.position.set(.02,.3,0);
+            body.linearDamping = this.damping;
             world.add(body);
             bodies.push(body);
 
             // Graphics
             var geo = new THREE.CylinderGeometry(1,1,.3,20,20,false);
             var mesh = new THREE.Mesh(geo, material6);
+            mesh.recieveShadow = true;
+            mesh.castShadow = true;
             meshes.push(mesh);
             scene.add(mesh);
         }
     function addCylinder3(){
             // Physics
-            var body = new CANNON.Body({ mass: mass, material : mat1 });
+            var body = new CANNON.Body({ mass: mass });
             var shape = new CANNON.Cylinder(1, 1, .3, 10);
             var quat = new CANNON.Quaternion(0.5, 0, 0, 0.5);
             quat.normalize();
             body.addShape(shape, new CANNON.Vec3, quat);
             body.position.set(.1,.6,0);
+            body.linearDamping = this.damping;
             world.add(body);
             bodies.push(body);
 
             // Graphics
             var geo = new THREE.CylinderGeometry(1,1,.3,20,20,false);
             var mesh = new THREE.Mesh(geo, material5);
+            mesh.recieveShadow = true;
+            mesh.castShadow = true;
             meshes.push(mesh);
             scene.add(mesh);
         }
     
     function addCylinder4(){
             // Physics
-            var body = new CANNON.Body({ mass: mass, material : mat1 });
+            var body = new CANNON.Body({ mass: mass });
             var shape = new CANNON.Cylinder(1, 1, .3, 10);
             var quat = new CANNON.Quaternion(0.5, 0, 0, 0.5);
             quat.normalize();
             body.addShape(shape, new CANNON.Vec3, quat);
             body.position.set(0,.9,-.17);
+            body.linearDamping = this.damping;
             world.add(body);
             bodies.push(body);
 
             // Graphics
             var geo = new THREE.CylinderGeometry(1,1,.3,20,20,false);
             var mesh = new THREE.Mesh(geo, material4);
+            mesh.recieveShadow = true;
+            mesh.castShadow = true;
             meshes.push(mesh);
             scene.add(mesh);
         }
 
     function addCylinder5(){
             // Physics
-            var body = new CANNON.Body({ mass: mass, material : mat1 });
+            var body = new CANNON.Body({ mass: mass });
             var shape = new CANNON.Cylinder(1, 1, .3, 10);
             var quat = new CANNON.Quaternion(0.5, 0, 0, 0.5);
             quat.normalize();
             body.addShape(shape, new CANNON.Vec3, quat);
             body.position.set(-.6,1.2,0);
+            body.linearDamping = this.damping;
             world.add(body);
             bodies.push(body);
 
             // Graphics
             var geo = new THREE.CylinderGeometry(1,1,.3,20,20,false);
             var mesh = new THREE.Mesh(geo, material6);
+            mesh.recieveShadow = true;
+            mesh.castShadow = true;
             meshes.push(mesh);
             scene.add(mesh);
         }
+    function addCylinder6(){
+            // Physics
+            var body = new CANNON.Body({ mass: mass });
+            var shape = new CANNON.Cylinder(1, 1, .3, 10);
+            var quat = new CANNON.Quaternion(0.5, 0, 0, 0.5);
+            quat.normalize();
+            body.addShape(shape, new CANNON.Vec3, quat);
+            body.position.set(.02,1.5,.4);
+            body.linearDamping = this.damping;
+            world.add(body);
+            bodies.push(body);
+
+            // Graphics
+            var geo = new THREE.CylinderGeometry(1,1,.3,20,20,false);
+            var mesh = new THREE.Mesh(geo, material6);
+            mesh.recieveShadow = true;
+            mesh.castShadow = true;
+            meshes.push(mesh);
+            scene.add(mesh);
+        }
+    function addCylinder7(){
+            // Physics
+            var body = new CANNON.Body({ mass: mass  });
+            var shape = new CANNON.Cylinder(1, 1, .3, 10);
+            var quat = new CANNON.Quaternion(0.5, 0, 0, 0.5);
+            quat.normalize();
+            body.addShape(shape, new CANNON.Vec3, quat);
+            body.position.set(.3,1.8,.2);
+            body.linearDamping = this.damping;
+            world.add(body);
+            bodies.push(body);
+
+            // Graphics
+            var geo = new THREE.CylinderGeometry(1,1,.3,20,20,false);
+            var mesh = new THREE.Mesh(geo, material5);
+            mesh.recieveShadow = true;
+            mesh.castShadow = true;
+            meshes.push(mesh);
+            scene.add(mesh);
+        }
+    
+    function addCylinder8(){
+            // Physics
+            var body = new CANNON.Body({ mass: mass  });
+            var shape = new CANNON.Cylinder(1, 1, .3, 10);
+            var quat = new CANNON.Quaternion(0.5, 0, 0, 0.5);
+            quat.normalize();
+            body.addShape(shape, new CANNON.Vec3, quat);
+            body.position.set(.1,2.1,-.37);
+            body.linearDamping = this.damping;
+            world.add(body);
+            bodies.push(body);
+
+            // Graphics
+            var geo = new THREE.CylinderGeometry(1,1,.3,20,20,false);
+            var mesh = new THREE.Mesh(geo, material4);
+            mesh.recieveShadow = true;
+            mesh.castShadow = true;
+            meshes.push(mesh);
+            scene.add(mesh);
+        }
+
+    function addCylinder9(){
+            // Physics
+            var body = new CANNON.Body({ mass: mass });
+            var shape = new CANNON.Cylinder(1, 1, .3, 10);
+            var quat = new CANNON.Quaternion(0.5, 0, 0, 0.5);
+            quat.normalize();
+            body.addShape(shape, new CANNON.Vec3, quat);
+            body.position.set(-.6,2.4,0);
+            body.linearDamping = this.damping;
+            world.add(body);
+            bodies.push(body);
+
+            // Graphics
+            var geo = new THREE.CylinderGeometry(1,1,.3,20,20,false);
+            var mesh = new THREE.Mesh(geo, material6);
+            mesh.recieveShadow = true;
+            mesh.castShadow = true;
+            meshes.push(mesh);
+            scene.add(mesh);
+        }
+
 
 
        
